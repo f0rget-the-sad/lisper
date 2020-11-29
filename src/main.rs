@@ -1,4 +1,11 @@
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
+
+mod parser;
+
 use lisper::Config;
+
 use rustyline::{error::ReadlineError, Editor};
 use std::env;
 use std::process;
@@ -35,8 +42,12 @@ fn promt() {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                rl.add_history_entry(line.as_str());
-                println!("Line: {}", line);
+                let line_str = line.as_str();
+                rl.add_history_entry(line_str);
+                match parser::parse(line_str) {
+                    Ok(l) => println!("Line: {}", l),
+                    Err(e) => println!("Parser Error: {}", e),
+                };
             }
             Err(ReadlineError::Interrupted) => {
                 println!("CTRL-C, exiting...");
