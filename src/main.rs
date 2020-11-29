@@ -1,18 +1,10 @@
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
-mod parser;
-
 use lisper::Config;
 
-use rustyline::{error::ReadlineError, Editor};
 use std::env;
 use std::process;
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 const NAME: &'static str = env!("CARGO_PKG_NAME");
-const HISTORY_PATH: &'static str = "/tmp/lister_history.txt";
 
 fn main() {
     println!("{} version {}", NAME, VERSION);
@@ -22,46 +14,5 @@ fn main() {
         process::exit(1);
     });
 
-    if conf.is_promt {
-        promt();
-    } else {
-        proc_file(conf.file);
-    }
-}
-
-fn proc_file(file_name: String) {
-    println!("Processing file '{}'...", file_name);
-}
-
-fn promt() {
-    let mut rl = Editor::<()>::new();
-    if rl.load_history(HISTORY_PATH).is_err() {
-        //println!("No previous history.");
-    }
-    loop {
-        let readline = rl.readline(">> ");
-        match readline {
-            Ok(line) => {
-                let line_str = line.as_str();
-                rl.add_history_entry(line_str);
-                match parser::parse(line_str) {
-                    Ok(l) => println!("Line: {}", l),
-                    Err(e) => println!("Parser Error: {}", e),
-                };
-            }
-            Err(ReadlineError::Interrupted) => {
-                println!("CTRL-C, exiting...");
-                break;
-            }
-            Err(ReadlineError::Eof) => {
-                println!("CTRL-D, exiting...");
-                break;
-            }
-            Err(err) => {
-                println!("Error: {:?}", err);
-                break;
-            }
-        }
-    }
-    rl.save_history(HISTORY_PATH).unwrap();
+    lisper::run(conf);
 }
