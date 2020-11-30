@@ -2,6 +2,7 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
+mod evaluator;
 mod parser;
 
 use rustyline::{error::ReadlineError, Editor};
@@ -54,7 +55,7 @@ fn promt() {
                 let line_str = line.as_str();
                 rl.add_history_entry(line_str);
                 match parser::parse(line_str) {
-                    Ok(l) => println!("Line: {}", l),
+                    Ok(r) => println!("{} => {}", line_str, r),
                     Err(e) => println!("Parser Error: {}", e),
                 };
             }

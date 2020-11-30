@@ -1,33 +1,19 @@
 use pest::error::Error;
+use pest::iterators::Pairs;
 use pest::Parser;
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
-struct GrammarParser;
+pub struct GrammarParser;
 
-pub fn parse(line: &str) -> Result<&str, Error<Rule>> {
-    let pairs = GrammarParser::parse(Rule::expr_list, line)?;
+use crate::evaluator;
 
-    // Because ident_list is silent, the iterator will contain idents
-    for pair in pairs {
-        /*
-        // A pair is a combination of the rule which matched and a span of input
-        println!("Rule:    {:?}", pair.as_rule());
-        println!("Span:    {:?}", pair.as_span());
-        println!("Text:    {}", pair.as_str());
+pub fn parse(line: &str) -> Result<i64, Error<Rule>> {
+    Ok(evaluator::eval(parse_expr_list(line)?))
+}
 
-        // A pair can be converted to an iterator of the tokens which make it up:
-        for inner_pair in pair.into_inner() {
-            match inner_pair.as_rule() {
-                Rule::alpha => println!("Letter:  {}", inner_pair.as_str()),
-                Rule::digit => println!("Digit:   {}", inner_pair.as_str()),
-                _ => unreachable!(),
-            };
-        }
-        */
-        dbg!(pair);
-    }
-    Ok(line)
+fn parse_expr_list(line: &str) -> Result<Pairs<Rule>, Error<Rule>> {
+    GrammarParser::parse(Rule::expr_list, line)
 }
 
 #[cfg(test)]
@@ -37,15 +23,53 @@ mod tests {
     #[test]
     fn test_parser_ok() {
         let line = "+ 5 (* 2 2)";
-        let result = parse(line);
+        let result = parse_expr_list(line);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), line);
+    }
+
+    #[test]
+    fn test_parser_gt_ten() {
+        let line = "+ 10 (* 2 2)";
+        let result = parse_expr_list(line);
+        assert!(result.is_ok());
     }
 
     #[test]
     fn test_parser_err() {
         let line = "fuck+ 5 (* 2 2)";
-        let result = parse(line);
+        let result = parse_expr_list(line);
         assert!(!result.is_ok());
+    }
+
+    // TODO: figure out how to construct Pairs<Rule> directly
+    // and move eval tests to `evaluator`
+    #[test]
+    fn test_parser_and_eval_single() {
+        let line = "+ 1";
+        assert_eq!(parse(line).unwrap(), 1);
+    }
+
+    #[test]
+    fn test_parser_and_eval_division() {
+        let line = "/ 121 11";
+        assert_eq!(parse(line).unwrap(), 11);
+    }
+
+    #[test]
+    fn test_parser_and_eval_long() {
+        let line = "+ 1 2 1 4";
+        assert_eq!(parse(line).unwrap(), 8);
+    }
+
+    #[test]
+    fn test_parser_and_eval_book_example1() {
+        let line = "* 10 (+ 1 51)";
+        assert_eq!(parse(line).unwrap(), 520);
+    }
+
+    #[test]
+    fn test_parser_and_eval_book_example2() {
+        let line = "- (* 10 10) (+ 1 1 1)";
+        assert_eq!(parse(line).unwrap(), 97);
     }
 }
