@@ -1,6 +1,7 @@
-WHITESPACE = _{ (" " | NEWLINE ) }
-number = {("+" | "-")? ~ '0'..'9'}
+number = @{("+" | "-")? ~ ('0'..'9')+}
 operator = {"+" | "-" | "*" | "/"}
 expr = {number | "(" ~ operator ~ expr+ ~ ")"}
 
 expr_list = _{ SOI ~ operator ~ expr+ ~ EOI}
+
+WHITESPACE = _{ (" " | NEWLINE | "\n" ) }
