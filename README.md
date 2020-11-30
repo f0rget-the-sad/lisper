@@ -1,7 +1,7 @@
 # Lisper
 
 Yes, one more lisp implementation based on [Build Your Own Lisp](http://buildyourownlisp.com/) book.
-
+![Rust](https://github.com/f0rget/lisper/workflows/Rust/badge.svg?branch=master)
 
 ## References
 
