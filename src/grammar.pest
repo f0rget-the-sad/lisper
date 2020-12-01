@@ -1,5 +1,5 @@
 number = @{("+" | "-")? ~ ('0'..'9')+}
-operator = {"+" | "-" | "*" | "/"}
+operator = {"+" | "-" | "*" | "/" | "%" | "^" | "min" | "max"}
 expr = {number | "(" ~ operator ~ expr+ ~ ")"}
 
 expr_list = _{ SOI ~ operator ~ expr+ ~ EOI}
