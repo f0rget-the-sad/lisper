@@ -62,6 +62,12 @@ mod tests {
     }
 
     #[test]
+    fn test_parser_and_eval_max_pow() {
+        let line = "max (^ 2 3) (^ 3 2)";
+        assert_eq!(parse(line).unwrap(), 9);
+    }
+
+    #[test]
     fn test_parser_and_eval_book_example1() {
         let line = "* 10 (+ 1 51)";
         assert_eq!(parse(line).unwrap(), 520);
@@ -82,5 +88,19 @@ mod tests {
     fn test_parser_and_eval_pow() {
         assert_eq!(parse("^ 4 2").unwrap(), 16);
         assert_eq!(parse("^ 2 10").unwrap(), 1024);
+    }
+
+    #[test]
+    fn test_parser_and_eval_min() {
+        assert_eq!(parse("min 1 5 3").unwrap(), 1);
+        assert_eq!(parse("min 2 10 0").unwrap(), 0);
+        assert_eq!(parse("min 300 314 314 69").unwrap(), 69);
+    }
+
+    #[test]
+    fn test_parser_and_eval_max() {
+        assert_eq!(parse("max 1 5 3").unwrap(), 5);
+        assert_eq!(parse("max 2 10 0").unwrap(), 10);
+        assert_eq!(parse("max 300 314 314 69").unwrap(), 314);
     }
 }

@@ -3,7 +3,7 @@ use pest::iterators::Pairs;
 use std::convert::TryInto;
 
 pub fn eval(pairs: Pairs<Rule>) -> i64 {
-    let mut op: Option<char> = None;
+    let mut op: Option<&str> = None;
     // since we using Polish notation
     // we could eval numbers directly to result
     let mut numbers = Vec::with_capacity(2);
@@ -11,7 +11,7 @@ pub fn eval(pairs: Pairs<Rule>) -> i64 {
     for pair in pairs {
         let token = pair.as_str();
         match pair.as_rule() {
-            Rule::operator => op = Some(token.chars().nth(0).unwrap()),
+            Rule::operator => op = Some(token),
             Rule::number => numbers.push(eval_number(token)),
             Rule::expr => numbers.push(eval(pair.into_inner())),
             Rule::EOI => {
@@ -37,14 +37,16 @@ fn eval_number(x: &str) -> i64 {
     x.parse::<i64>().unwrap()
 }
 
-fn eval_op(x: i64, op: &char, y: i64) -> i64 {
+fn eval_op(x: i64, op: &str, y: i64) -> i64 {
     match op {
-        '+' => return y + x,
-        '-' => return y - x,
-        '*' => return y * x,
-        '/' => return y / x,
-        '%' => return y % x,
-        '^' => return y.pow(x.try_into().unwrap()),
+        "+" => return y + x,
+        "-" => return y - x,
+        "*" => return y * x,
+        "/" => return y / x,
+        "%" => return y % x,
+        "^" => return y.pow(x.try_into().unwrap()),
+        "min" => return y.min(x),
+        "max" => return y.max(x),
         _ => unreachable!(),
     }
 }
