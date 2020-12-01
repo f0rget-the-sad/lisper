@@ -72,4 +72,15 @@ mod tests {
         let line = "- (* 10 10) (+ 1 1 1)";
         assert_eq!(parse(line).unwrap(), 97);
     }
+
+    #[test]
+    fn test_parser_and_eval_mod() {
+        assert_eq!(parse("% 10 6").unwrap(), 4);
+    }
+
+    #[test]
+    fn test_parser_and_eval_pow() {
+        assert_eq!(parse("^ 4 2").unwrap(), 16);
+        assert_eq!(parse("^ 2 10").unwrap(), 1024);
+    }
 }

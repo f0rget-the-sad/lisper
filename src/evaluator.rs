@@ -1,5 +1,6 @@
 use crate::parser::Rule;
 use pest::iterators::Pairs;
+use std::convert::TryInto;
 
 pub fn eval(pairs: Pairs<Rule>) -> i64 {
     let mut op: Option<char> = None;
@@ -42,6 +43,8 @@ fn eval_op(x: i64, op: &char, y: i64) -> i64 {
         '-' => return y - x,
         '*' => return y * x,
         '/' => return y / x,
+        '%' => return y % x,
+        '^' => return y.pow(x.try_into().unwrap()),
         _ => unreachable!(),
     }
 }
