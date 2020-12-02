@@ -7,7 +7,7 @@ mod parser;
 
 use rustyline::{error::ReadlineError, Editor};
 
-const HISTORY_PATH: &'static str = "/tmp/lister_history.txt";
+const HISTORY_PATH: &str = "/tmp/lister_history.txt";
 
 #[derive(Debug)]
 pub struct Config {
@@ -24,7 +24,7 @@ impl Config {
             Some(arg) => arg,
             None => "".to_string(),
         };
-        let is_promt = file.len() == 0;
+        let is_promt = file.is_empty();
 
         Ok(Config { file, is_promt })
     }

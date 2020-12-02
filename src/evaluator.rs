@@ -39,14 +39,14 @@ fn eval_number(x: &str) -> i64 {
 
 fn eval_op(x: i64, op: &str, y: i64) -> i64 {
     match op {
-        "+" => return y + x,
-        "-" => return y - x,
-        "*" => return y * x,
-        "/" => return y / x,
-        "%" => return y % x,
-        "^" => return y.pow(x.try_into().unwrap()),
-        "min" => return y.min(x),
-        "max" => return y.max(x),
+        "+" => y + x,
+        "-" => y - x,
+        "*" => y * x,
+        "/" => y / x,
+        "%" => y % x,
+        "^" => y.pow(x.try_into().unwrap()),
+        "min" => y.min(x),
+        "max" => y.max(x),
         _ => unreachable!(),
     }
 }
