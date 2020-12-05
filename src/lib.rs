@@ -2,6 +2,7 @@ extern crate pest;
 #[macro_use]
 extern crate pest_derive;
 
+mod error;
 mod evaluator;
 mod parser;
 
@@ -54,9 +55,9 @@ fn promt() {
             Ok(line) => {
                 let line_str = line.as_str();
                 rl.add_history_entry(line_str);
-                match parser::parse(line_str) {
+                match parser::parse_and_eval(line_str) {
                     Ok(r) => println!("{} => {}", line_str, r),
-                    Err(e) => println!("Parser Error: {}", e),
+                    Err(e) => println!("Error: {}", e),
                 };
             }
             Err(ReadlineError::Interrupted) => {
