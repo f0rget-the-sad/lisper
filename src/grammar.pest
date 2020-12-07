@@ -1,7 +1,8 @@
 number = @{("+" | "-")? ~ ('0'..'9')+}
-operator = {"+" | "-" | "*" | "/" | "%" | "^" | "min" | "max"}
-expr = {number | "(" ~ operator ~ expr+ ~ ")"}
+symbol = {"+" | "-" | "*" | "/" | "%" | "^" | "min" | "max"}
+expr = {number | symbol | sexpr}
+sexpr = {"(" ~ expr* ~ ")"}
 
-expr_list = _{ SOI ~ operator ~ expr+ ~ EOI}
+expr_list = _{ SOI ~ expr* ~ EOI}
 
 WHITESPACE = _{ (" " | NEWLINE | "\n" ) }

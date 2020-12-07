@@ -11,7 +11,7 @@ pub fn eval(pairs: Pairs<Rule>) -> LiResult<i64> {
     for pair in pairs {
         let token = pair.as_str();
         match pair.as_rule() {
-            Rule::operator => op = Some(token),
+            Rule::symbol => op = Some(token),
             Rule::number => numbers.push(eval_number(token)),
             Rule::expr => numbers.push(eval(pair.into_inner())?),
             Rule::EOI => {
