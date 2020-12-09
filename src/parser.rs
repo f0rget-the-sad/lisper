@@ -9,6 +9,7 @@ pub struct GrammarParser;
 
 use crate::evaluator;
 
+#[derive(Debug, Clone)]
 pub enum Type {
     Number(i64),
     Symbol(String),
@@ -16,45 +17,24 @@ pub enum Type {
 }
 
 pub fn parse_and_eval(line: &str) -> LiResult<i64> {
-    evaluator::eval(parse_expr_list(line)?)
+    //evaluator::eval(parse_expr_list(line)?)
+    dbg!(evaluator::eval(
+        lval_read(GrammarParser::parse(Rule::expr_list, line).unwrap()).unwrap()
+    ));
+    Ok(0)
 }
 
-pub fn lval_read(line: &str) -> LiResult<Type> {
-    // pass to func?
-    let pairs = GrammarParser::parse(Rule::expr_list, line)?;
-
+pub fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
     let mut sexprs = vec![];
     for pair in pairs {
         let token = pair.as_str();
-        return Ok(
         match pair.as_rule() {
             //TODO: will it always be first
             Rule::symbol => sexprs.push(Type::Symbol(token.to_string())),
             Rule::number => sexprs.push(Type::Number(token.parse::<i64>().unwrap())),
-            Rule::sexpr => {
-                sexprs.push(lval_read(pair.into_inner())?)
-                Type::Sexpr
-            },
-            Rule::EOI => {
-                //TODO EOI: why it's not striped out as new line?
+            Rule::sexpr | Rule::expr => {
+                sexprs.push(lval_read(pair.into_inner())?);
             }
-            _ => {
-                dbg!(pair);
-                unreachable!()
-            }
-        });
-    }
-    /*
-    let mut op: Option<&str> = None;
-    // since we using Polish notation
-    // we could eval numbers directly to result
-    let mut numbers = Vec::with_capacity(2);
-    for pair in pairs {
-        let token = pair.as_str();
-        match pair.as_rule() {
-            Rule::symbol => op = Some(token),
-            Rule::number => numbers.push(eval_number(token)),
-            Rule::expr => numbers.push(eval(pair.into_inner())?),
             Rule::EOI => {
                 //TODO EOI: why it's not striped out as new line?
             }
@@ -63,16 +43,12 @@ pub fn lval_read(line: &str) -> LiResult<Type> {
                 unreachable!()
             }
         };
-        // check if we have enough values to evaluate
-        if numbers.len() == 2 {
-            let result = eval_op(numbers.pop().unwrap(), &op.unwrap(), numbers.pop().unwrap());
-            numbers.push(result?);
-        }
+    }
+    if sexprs.len() == 1 {
+        return Ok(sexprs.pop().unwrap());
     }
 
-    assert_eq!(numbers.len(), 1);
-    Ok(numbers[0])
-    */
+    Ok(Type::Sexpr(sexprs))
 }
 
 #[cfg(test)]
