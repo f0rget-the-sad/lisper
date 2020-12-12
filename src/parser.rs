@@ -9,12 +9,51 @@ pub struct GrammarParser;
 
 use crate::evaluator;
 
-pub fn parse_and_eval(line: &str) -> LiResult<i64> {
-    evaluator::eval(parse_expr_list(line)?)
+#[derive(Debug, Clone)]
+pub enum Type {
+    Number(i64),
+    Symbol(String),
+    // TODO: use VecDec, op require pop_front?
+    Sexpr(Vec<Type>),
 }
 
-fn parse_expr_list(line: &str) -> LiResult<Pairs<Rule>> {
+pub fn parse_and_eval(line: &str) -> LiResult<i64> {
+    let ast = lval_read(line_to_pairs(line)?)?;
+    match evaluator::eval(ast)? {
+        Type::Number(n) => Ok(n),
+        _ => unreachable!(),
+    }
+}
+
+fn line_to_pairs(line: &str) -> LiResult<Pairs<Rule>> {
     Ok(GrammarParser::parse(Rule::expr_list, line)?)
+}
+
+fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
+    let mut sexprs = vec![];
+    for pair in pairs {
+        let token = pair.as_str();
+        match pair.as_rule() {
+            //TODO: will it always be first
+            Rule::symbol => sexprs.push(Type::Symbol(token.to_string())),
+            Rule::number => sexprs.push(Type::Number(token.parse::<i64>().unwrap())),
+            Rule::sexpr | Rule::expr => {
+                sexprs.push(lval_read(pair.into_inner())?);
+            }
+            Rule::EOI => {
+                //TODO EOI: why it's not striped out as new line?
+            }
+            _ => {
+                dbg!(pair);
+                unreachable!()
+            }
+        };
+    }
+    if sexprs.len() == 1 {
+        return Ok(sexprs.pop().unwrap());
+    }
+
+    Ok(Type::Sexpr(sexprs))
 }
 
 #[cfg(test)]
@@ -25,21 +64,21 @@ mod tests {
     #[test]
     fn test_parser_ok() {
         let line = "+ 5 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_parser_gt_ten() {
         let line = "+ 10 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_parser_err() {
         let line = "fuck+ 5 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(!result.is_ok());
     }
 
