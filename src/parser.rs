@@ -13,18 +13,23 @@ use crate::evaluator;
 pub enum Type {
     Number(i64),
     Symbol(String),
+    // TODO: use VecDec, op require pop_front?
     Sexpr(Vec<Type>),
 }
 
 pub fn parse_and_eval(line: &str) -> LiResult<i64> {
-    //evaluator::eval(parse_expr_list(line)?)
-    dbg!(evaluator::eval(
-        lval_read(GrammarParser::parse(Rule::expr_list, line).unwrap()).unwrap()
-    ));
-    Ok(0)
+    let ast = lval_read(line_to_pairs(line)?)?;
+    match evaluator::eval(ast)? {
+        Type::Number(n) => Ok(n),
+        _ => unreachable!(),
+    }
 }
 
-pub fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
+fn line_to_pairs(line: &str) -> LiResult<Pairs<Rule>> {
+    Ok(GrammarParser::parse(Rule::expr_list, line)?)
+}
+
+fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
     let mut sexprs = vec![];
     for pair in pairs {
         let token = pair.as_str();
@@ -59,21 +64,21 @@ mod tests {
     #[test]
     fn test_parser_ok() {
         let line = "+ 5 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_parser_gt_ten() {
         let line = "+ 10 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_parser_err() {
         let line = "fuck+ 5 (* 2 2)";
-        let result = parse_expr_list(line);
+        let result = line_to_pairs(line);
         assert!(!result.is_ok());
     }
 
