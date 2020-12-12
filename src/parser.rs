@@ -14,11 +14,16 @@ pub enum Type {
     Number(i64),
     Symbol(String),
     // TODO: use VecDec, op require pop_front?
+    //Expr(Vec<Type>),
     Sexpr(Vec<Type>),
+    Qexpr(Vec<Type>),
 }
 
 pub fn parse_and_eval(line: &str) -> LiResult<i64> {
-    let ast = lval_read(line_to_pairs(line)?)?;
+    let pairs = line_to_pairs(line)?;
+    dbg!(pairs.clone());
+    let ast = lval_read(pairs)?;
+    dbg!(ast.clone());
     match evaluator::eval(ast)? {
         Type::Number(n) => Ok(n),
         _ => unreachable!(),
@@ -30,15 +35,22 @@ fn line_to_pairs(line: &str) -> LiResult<Pairs<Rule>> {
 }
 
 fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
-    let mut sexprs = vec![];
+    let mut exprs = vec![];
     for pair in pairs {
         let token = pair.as_str();
         match pair.as_rule() {
             //TODO: will it always be first
-            Rule::symbol => sexprs.push(Type::Symbol(token.to_string())),
-            Rule::number => sexprs.push(Type::Number(token.parse::<i64>().unwrap())),
-            Rule::sexpr | Rule::expr => {
-                sexprs.push(lval_read(pair.into_inner())?);
+            Rule::symbol => exprs.push(Type::Symbol(token.to_string())),
+            Rule::number => exprs.push(Type::Number(token.parse::<i64>().unwrap())),
+            Rule::expr | Rule::sexpr => {
+                exprs.push(lval_read(pair.into_inner())?);
+            }
+            Rule::qexpr => {
+                match lval_read(pair.into_inner())? {
+                    // TODO: is this unwrapping really needed?
+                    Type::Sexpr(v) => return Ok(Type::Qexpr(v)),
+                    v => return Ok(Type::Qexpr(vec![v])),
+                }
             }
             Rule::EOI => {
                 //TODO EOI: why it's not striped out as new line?
@@ -49,11 +61,12 @@ fn lval_read(pairs: Pairs<Rule>) -> LiResult<Type> {
             }
         };
     }
-    if sexprs.len() == 1 {
-        return Ok(sexprs.pop().unwrap());
+
+    if exprs.len() == 1 {
+        return Ok(exprs.pop().unwrap());
     }
 
-    Ok(Type::Sexpr(sexprs))
+    Ok(Type::Sexpr(exprs))
 }
 
 #[cfg(test)]

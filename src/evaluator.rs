@@ -5,6 +5,10 @@ use std::convert::TryInto;
 pub fn eval(lval: Type) -> LiResult<Type> {
     match lval {
         Type::Sexpr(v) => lval_eval_sexprs(v),
+        Type::Qexpr(v) => {
+            dbg!(v);
+            Ok(Type::Number(0))
+        }
         _ => Ok(lval),
     }
 }
