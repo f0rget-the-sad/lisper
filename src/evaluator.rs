@@ -11,14 +11,14 @@ pub fn eval(lval: Type) -> LiResult<Type> {
 
 fn lval_eval_sexprs(mut sexpr: Vec<Type>) -> LiResult<Type> {
     /* Empty Expression */
-    if sexpr.len() == 0 {
+    if sexpr.is_empty() {
         return Ok(Type::Sexpr(sexpr));
     }
 
     /* Recursively evaluate all Sexprs in list */
-    for i in 0..sexpr.len() {
+    for sex in sexpr.iter_mut() {
         // TODO: rework to avoid cloning
-        sexpr[i] = eval(sexpr[i].clone())?;
+        *sex = eval(sex.clone())?;
     }
 
     /* Single Expression */
