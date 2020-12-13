@@ -10,6 +10,7 @@ pub type LiResult<T> = result::Result<T, LisperError>;
 #[derive(Debug)]
 pub enum LisperError {
     Parser(pest::error::Error<Rule>),
+    EvalError(&'static str),
     ZeroDiv,
     SymbolNotFound,
 }
@@ -18,6 +19,7 @@ impl fmt::Display for LisperError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             LisperError::Parser(ref err) => err.fmt(f),
+            LisperError::EvalError(ref err) => err.fmt(f),
             LisperError::ZeroDiv => write!(f, "Attempt to divide by zero!"),
             LisperError::SymbolNotFound => write!(f, "S-expression Does not start with symbol!"),
         }
